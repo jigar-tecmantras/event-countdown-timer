@@ -1,0 +1,269 @@
+:root {
+  --bg: #030712;
+  --panel: rgba(23, 32, 44, 0.95);
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: #b0c6ff;
+  --accent: #7c5dfa;
+  --accent-strong: #926efc;
+  --danger: #ff6b6b;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 3rem 1.5rem 4rem;
+  background: radial-gradient(circle at top, rgba(124, 93, 250, 0.25), transparent 45%),
+    radial-gradient(circle at 20% 20%, rgba(124, 93, 250, 0.35), transparent 40%),
+    var(--bg);
+  color: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.hero {
+  background: linear-gradient(145deg, rgba(124, 93, 250, 0.1), rgba(7, 10, 18, 0.9));
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  box-shadow: 0 30px 60px rgba(7, 10, 18, 0.7);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 3vw, 3.5rem);
+  margin-bottom: 0.5rem;
+}
+
+.hero__subtitle {
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.hero__next {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.form-card {
+  background: var(--panel);
+  border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  padding: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  box-shadow: 0 25px 40px rgba(2, 4, 8, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.countdown-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.countdown-form label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.countdown-form input {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fefefe;
+  font-size: 1rem;
+  transition: border 0.2s ease;
+}
+
+.countdown-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(124, 93, 250, 0.3);
+}
+
+.field-error {
+  color: var(--danger);
+  margin-top: -0.25rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #01030a;
+  background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fefefe;
+}
+
+.event-board {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-board__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  padding: 2rem;
+  border-radius: 1.25rem;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  text-align: center;
+}
+
+.event-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+}
+
+.event-card {
+  background: rgba(9, 13, 26, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 220px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.event-card:hover {
+  border-color: rgba(124, 93, 250, 0.6);
+  transform: translateY(-2px);
+}
+
+.event-card--complete {
+  border-color: rgba(255, 107, 107, 0.8);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.event-card__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.event-card__title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.event-card__target {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.event-card__status {
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.event-card--complete .event-card__status {
+  background: rgba(255, 107, 107, 0.2);
+  color: var(--danger);
+}
+
+.event-card__countdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.event-card__countdown div {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 0.75rem 0;
+}
+
+.event-card__countdown small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.event-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.event-card__actions button {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  color: #fefefe;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.event-card__actions button:hover {
+  border-color: var(--accent);
+}
+
+@media (min-width: 768px) {
+  .form-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .countdown-form {
+    width: 60%;
+  }
+}
