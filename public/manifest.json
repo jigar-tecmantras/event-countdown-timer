@@ -1,0 +1,8 @@
+{
+  "short_name": "Countdown",
+  "name": "Event Countdown Timer",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#03040c",
+  "background_color": "#03040c"
+}
