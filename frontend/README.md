@@ -1,33 +1,20 @@
-# Frontend - Event Countdown Timer
+# Event Countdown Timer (frontend)
 
-The React app lives inside `frontend/`. It consumes the backend API but keeps a local cache in `localStorage` so you can still add events when the server is unreachable.
+This folder houses the Create React App that renders the countdown UI and keeps events in `localStorage` for persistence.
 
-## Prerequisites
-
-- Node.js 18 or newer
-- The backend API (see `../backend/README.md`) should ideally be running on `http://localhost:4000` or your chosen host before starting the frontend.
-
-## Setup
+## Quick start
 
 ```bash
 cd frontend
 npm install
+npm start
 ```
 
-## Environment
+## Build & test
 
-Set `REACT_APP_API_BASE_URL` when you need to point the app at a different backend host. A sample `.env.example` is provided next to the CRA sources.
+- `npm run build` – generate a production-ready bundle inside `frontend/build/`.
+- `npm test` – execute CRA's default test runner.
 
-For local development with the default backend port:
+## Customization
 
-```bash
-REACT_APP_API_BASE_URL=http://localhost:4000/api npm start
-```
-
-If you omit the variable, the app defaults to `http://localhost:4000/api`.
-
-## Available scripts
-
-- `npm start` – Starts the development server (`localhost:3000`).
-- `npm run build` – Builds a production bundle that can sit behind a static host.
-- `npm test` – Launches the CRA test runner (press `a` to run all tests).
+Set the optional `REACT_APP_TITLE` environment variable if you would like to rename the hero banner without touching the source code.

@@ -1,4 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+  background-color: #020617;
+  --bg: #020617;
+  --card: #0f172a;
+  --card-alt: #111827;
+  --card-border: rgba(148, 163, 184, 0.4);
+  --muted: #94a3b8;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --error: #f87171;
+}
 
 * {
   box-sizing: border-box;
@@ -6,11 +18,10 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #03040c;
+  background-color: var(--bg);
   min-height: 100vh;
 }
 
 #root {
-  isolation: isolate;
+  min-height: 100vh;
 }

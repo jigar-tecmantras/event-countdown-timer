@@ -1,53 +1,37 @@
 # Event Countdown Timer
 
-A full-stack countdown experience that lets users save multiple events and watch live timers for each milestone. The React frontend talks to a small Node/Express API that keeps events persisted between restarts.
+A focused, front-end-first experience that lets you save as many events as you like and watch live countdowns for each milestone.
 
 ## Repository layout
 
 | Folder | Purpose |
 | --- | --- |
-| `backend/` | Node.js + Express API that stores events in `data/events.json` and exposes CRUD endpoints at `/api/events`. |
-| `frontend/` | Create React App frontend that renders the countdown cards, validates input, and synchronizes with the backend while also keeping a local `localStorage` cache. |
+| `backend/` | Legacy Node/Express API that powered the previous version of this project. It is retained here for reference but is no longer required to run the countdown timer. |
+| `frontend/` | Create React App that powers the interactive, single-page countdown experience described below. |
 
 ## Getting started
 
-### Run the backend API
+### Frontend only
+1. `cd frontend`
+2. `npm install`
+3. `npm start`
 
-```bash
-cd backend
-npm install
-PORT=4000 npm start
-```
+The React app runs entirely in the browser and persists events in `localStorage`, so there is no need to boot up the backend.
 
-Once running, the API listens on `http://localhost:4000` and exposes:
+### Build & test
 
-- `GET /api/events`
-- `POST /api/events`
-- `PUT /api/events/:id`
-- `DELETE /api/events/:id`
+| Command | Purpose |
+| --- | --- |
+| `npm run build` | Create a production bundle inside `frontend/build/`. |
+| `npm test` | Run the built-in React testing library suite. |
 
-More details and sample payloads are documented in `backend/README.md`.
+## Features
 
-### Run the React frontend
+- Add multiple events with custom titles and dates/times.
+- Real-time countdown showing days, hours, minutes, and seconds.
+- Events remain saved across reloads via `localStorage`.
+- Remove events when they expire or if you change your plans.
 
-```bash
-cd frontend
-npm install
-REACT_APP_API_BASE_URL=http://localhost:4000/api npm start
-```
+## Environment variables
 
-If you run the frontend without the `REACT_APP_API_BASE_URL` variable, it still defaults to `http://localhost:4000/api`. The `.env.example` in the frontend folder shows the expected key.
-
-## Build & test
-
-| Area | Command | Notes |
-| --- | --- | --- |
-| Frontend build | `cd frontend && npm run build` | Creates a production bundle in `frontend/build/`. |
-| Frontend tests | `cd frontend && npm test` | Runs CRA's test runner. |
-| Backend dev | `cd backend && npm run dev` | Uses `nodemon` for automatic restarts. |
-
-## Helpful hints
-
-- The backend automatically bootstraps `backend/data/events.json` on first write, so there is no manual migration.
-- If the API is unreachable, the frontend falls back to local state and displays an offline badge.
-- Deploying both services together just requires pointing the frontend's `REACT_APP_API_BASE_URL` at the hosted API.
+- `REACT_APP_TITLE` (optional) – overrides the hero title rendered at the top of the page. Empowers you to brand the experience per deployment.

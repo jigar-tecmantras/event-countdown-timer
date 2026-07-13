@@ -3,6 +3,7 @@
   "name": "Event Countdown Timer",
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#03040c",
-  "background_color": "#03040c"
+  "theme_color": "#0f172a",
+  "background_color": "#0b1120",
+  "description": "Track multiple countdown events with live timers that refresh every second."
 }
