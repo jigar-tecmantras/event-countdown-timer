@@ -2,9 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
 const STORAGE_KEY = 'event-countdown-timer-events';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+const SERVER_STATUS_TEXT = {
+  loading: 'Syncing with backend…',
+  online: 'Backend connected',
+  offline: 'Offline — running locally',
+};
 
 const createId = () =>
-  typeof crypto !== 'undefined' && crypto.randomUUID
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
@@ -17,6 +23,7 @@ const loadEvents = () => {
     return parsed.map((event) => ({
       ...event,
       id: event.id ?? createId(),
+      synced: event.synced ?? true,
     }));
   } catch (error) {
     console.warn('Unable to read saved events', error);
@@ -38,19 +45,61 @@ const formatTimeParts = (milliseconds) => {
   const hours = Math.floor((totalSeconds % 86_400) / 3_600);
   const minutes = Math.floor((totalSeconds % 3_600) / 60);
   const seconds = totalSeconds % 60;
-
   const pad = (value) => String(value).padStart(2, '0');
-
   return { days, hours: pad(hours), minutes: pad(minutes), seconds: pad(seconds) };
 };
 
 const getStatusLabel = (diffMs) => (diffMs <= 0 ? 'Completed' : 'Live');
+
+const fetchServerEvents = async () => {
+  const response = await fetch(`${API_BASE_URL}/events`);
+  if (!response.ok) {
+    throw new Error('Unable to load events from server');
+  }
+  const payload = await response.json();
+  if (!Array.isArray(payload.events)) {
+    throw new Error('Unexpected payload from server');
+  }
+  return payload.events.map((event) => ({
+    ...event,
+    id: event.id ?? createId(),
+    synced: true,
+  }));
+};
+
+const createServerEvent = async (eventPayload) => {
+  const response = await fetch(`${API_BASE_URL}/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(eventPayload),
+  });
+  if (!response.ok) {
+    throw new Error('Unable to save event on the server');
+  }
+  const payload = await response.json();
+  if (!payload.event || !payload.event.id) {
+    throw new Error('Unexpected response when creating event');
+  }
+  return { ...payload.event, synced: true };
+};
+
+const deleteServerEvent = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Unable to delete event on the server');
+  }
+};
 
 function App() {
   const [events, setEvents] = useState(() => loadEvents());
   const [formData, setFormData] = useState({ title: '', target: '' });
   const [errors, setErrors] = useState({});
   const [now, setNow] = useState(() => Date.now());
+  const [serverStatus, setServerStatus] = useState('loading');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     saveEvents(events);
@@ -59,6 +108,28 @@ function App() {
   useEffect(() => {
     const ticker = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(ticker);
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+    setServerStatus('loading');
+    fetchServerEvents()
+      .then((serverEvents) => {
+        if (!isCurrent) return;
+        setEvents((prev) => {
+          const unsynced = prev.filter((event) => !event.synced);
+          return [...serverEvents, ...unsynced];
+        });
+        setServerStatus('online');
+      })
+      .catch((error) => {
+        console.error('Unable to reach backend', error);
+        if (!isCurrent) return;
+        setServerStatus('offline');
+      });
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const nextEvent = useMemo(() => {
@@ -88,56 +159,122 @@ function App() {
       validationErrors.title = 'Give it a memorable title.';
     }
 
+    let normalizedTarget = '';
     if (!formData.target) {
       validationErrors.target = 'Select a future date and time.';
     } else {
-      const targetTimestamp = new Date(formData.target).getTime();
-      if (Number.isNaN(targetTimestamp)) {
+      const parsed = new Date(formData.target);
+      const timestamp = parsed.getTime();
+      if (Number.isNaN(timestamp)) {
         validationErrors.target = 'That does not look like a valid date.';
-      } else if (targetTimestamp <= Date.now()) {
+      } else if (timestamp <= Date.now()) {
         validationErrors.target = 'Please pick a date/time in the future.';
+      } else {
+        normalizedTarget = parsed.toISOString();
       }
     }
 
-    const duplicate = events.some(
-      (item) =>
-        item.title.toLowerCase() === trimmedTitle.toLowerCase() &&
-        item.target === formData.target
-    );
-
-    if (!validationErrors.title && duplicate) {
-      validationErrors.title = 'An identical countdown already exists.';
+    if (!validationErrors.title && !validationErrors.target && normalizedTarget) {
+      const duplicate = events.some((item) => {
+        const storedTarget = new Date(item.target).toISOString();
+        return (
+          item.title.toLowerCase() === trimmedTitle.toLowerCase() &&
+          storedTarget === normalizedTarget
+        );
+      });
+      if (duplicate) {
+        validationErrors.title = 'An identical countdown already exists.';
+      }
     }
 
-    return { validationErrors, trimmedTitle };
+    return { validationErrors, trimmedTitle, normalizedTarget };
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const { validationErrors, trimmedTitle } = validate();
+    const { validationErrors, trimmedTitle, normalizedTarget } = validate();
     if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
       return;
     }
 
-    const newCountdown = {
+    const pendingEvent = {
       id: createId(),
       title: trimmedTitle,
-      target: formData.target,
+      target: normalizedTarget,
+      synced: false,
     };
 
-    setEvents((prev) => [...prev, newCountdown]);
+    setEvents((prev) => [...prev, pendingEvent]);
     setFormData({ title: '', target: '' });
     setErrors({});
+    setIsSubmitting(true);
+
+    try {
+      const persisted = await createServerEvent({
+        title: trimmedTitle,
+        target: normalizedTarget,
+      });
+      setEvents((prev) => prev.map((item) => (item.id === pendingEvent.id ? persisted : item)));
+      setServerStatus('online');
+    } catch (error) {
+      console.error('Failed to save event to backend', error);
+      setServerStatus('offline');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const removeEvent = (id) => {
-    setEvents((prev) => prev.filter((event) => event.id !== id));
+  const removeEvent = async (id) => {
+    const removedIndex = events.findIndex((item) => item.id === id);
+    const removedEvent = events[removedIndex];
+    setEvents((prev) => prev.filter((item) => item.id !== id));
+
+    if (!removedEvent || !removedEvent.synced) {
+      return;
+    }
+
+    try {
+      await deleteServerEvent(id);
+      setServerStatus('online');
+    } catch (error) {
+      console.error('Failed to delete event from backend', error);
+      setServerStatus('offline');
+      if (removedIndex >= 0) {
+        setEvents((prev) => {
+          const copy = [...prev];
+          copy.splice(Math.min(removedIndex, copy.length), 0, removedEvent);
+          return copy;
+        });
+      }
+    }
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
+    if (!events.length) return;
+    setIsClearing(true);
+    const snapshot = [...events];
+    const syncedToDelete = snapshot.filter((event) => event.synced);
     setEvents([]);
+
+    if (!syncedToDelete.length) {
+      setIsClearing(false);
+      return;
+    }
+
+    try {
+      await Promise.all(syncedToDelete.map((event) => deleteServerEvent(event.id)));
+      setServerStatus('online');
+    } catch (error) {
+      console.error('Failed to clear events on backend', error);
+      setServerStatus('offline');
+      setEvents(snapshot);
+    } finally {
+      setIsClearing(false);
+    }
   };
+
+  const serverStatusMessage = SERVER_STATUS_TEXT[serverStatus] ?? 'Backend status unknown';
 
   return (
     <div className="page">
@@ -148,9 +285,15 @@ function App() {
           <p className="hero__subtitle">
             Add as many events as you need, and let the live timer keep you informed down to the second.
           </p>
+          {serverStatusMessage && (
+            <p className={`server-status server-status--${serverStatus}`} aria-live="polite">
+              {serverStatusMessage}
+            </p>
+          )}
           {nextEvent && (
             <p className="hero__next">
-              Next up: <strong>{nextEvent.title}</strong> in <strong>{formatTimeParts(nextEvent.diff).days}</strong> days.
+              Next up: <strong>{nextEvent.title}</strong> in <strong>{formatTimeParts(nextEvent.diff).days}</strong>{' '}
+              days.
             </p>
           )}
         </div>
@@ -186,8 +329,17 @@ function App() {
           {errors.target && <p className="field-error">{errors.target}</p>}
 
           <div className="form-actions">
-            <button type="submit">Save countdown</button>
-            <button type="button" className="ghost" onClick={() => setFormData({ title: '', target: '' })}>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving…' : 'Save countdown'}
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => {
+                setFormData({ title: '', target: '' });
+                setErrors({});
+              }}
+            >
               Reset form
             </button>
           </div>
@@ -197,8 +349,8 @@ function App() {
       <section className="event-board" aria-live="polite">
         <div className="event-board__header">
           <h2>Your events</h2>
-          <button type="button" className="ghost" disabled={!events.length} onClick={clearAll}>
-            Clear all
+          <button type="button" className="ghost" disabled={!events.length || isClearing} onClick={clearAll}>
+            {isClearing ? 'Clearing…' : 'Clear all'}
           </button>
         </div>
         {events.length === 0 ? (

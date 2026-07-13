@@ -53,6 +53,34 @@
   font-weight: 600;
 }
 
+.server-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.9rem;
+}
+
+.server-status--online {
+  color: var(--accent);
+  background: rgba(124, 93, 250, 0.15);
+  border-color: rgba(124, 93, 250, 0.4);
+}
+
+.server-status--loading {
+  color: #f0f4ff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.server-status--offline {
+  color: var(--danger);
+  background: rgba(255, 107, 107, 0.16);
+  border-color: rgba(255, 107, 107, 0.45);
+}
+
 .form-card {
   background: var(--panel);
   border-radius: 1.25rem;

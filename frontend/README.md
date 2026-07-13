@@ -1,46 +1,33 @@
-# Event Countdown Timer
+# Frontend - Event Countdown Timer
 
-A Create React App that lets you track multiple upcoming events with live, second-level countdowns. Each event shows days, hours, minutes, and seconds remaining, and the UI clearly highlights completed milestones.
+The React app lives inside `frontend/`. It consumes the backend API but keeps a local cache in `localStorage` so you can still add events when the server is unreachable.
 
-## Key Features
+## Prerequisites
 
-- Add any number of countdowns with a title and target date/time.
-- Real-time timers that update every second without reloading the page.
-- Validation prevents empty titles, past dates, and duplicates.
-- Local storage persistence keeps events safe across refreshes.
-- Clear UI states for upcoming versus completed events, plus the ability to remove or clear all entries.
+- Node.js 18 or newer
+- The backend API (see `../backend/README.md`) should ideally be running on `http://localhost:4000` or your chosen host before starting the frontend.
 
-## Tech Stack
+## Setup
 
-- React (Create React App)
-- React Hooks (`useState`, `useEffect`, `useMemo`)
-- Native `localStorage` for persistence
-- Vanilla CSS with CSS variables for theming
+```bash
+cd frontend
+npm install
+```
 
-## Getting Started
+## Environment
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Run the development server:
-   ```bash
-   npm start
-   ```
-   The app will be available at `http://localhost:3000`.
+Set `REACT_APP_API_BASE_URL` when you need to point the app at a different backend host. A sample `.env.example` is provided next to the CRA sources.
 
-3. For a production-ready build:
-   ```bash
-   npm run build
-   ```
+For local development with the default backend port:
 
-## Future Ideas
+```bash
+REACT_APP_API_BASE_URL=http://localhost:4000/api npm start
+```
 
-- Add optional reminders or notifications.
-- Support recurring countdowns with flexible intervals.
-- Export/import event lists (JSON or calendar formats).
+If you omit the variable, the app defaults to `http://localhost:4000/api`.
 
-## Tested Commands
+## Available scripts
 
-- `npm start` (development server)
-- `npm run build` (production bundle)
+- `npm start` – Starts the development server (`localhost:3000`).
+- `npm run build` – Builds a production bundle that can sit behind a static host.
+- `npm test` – Launches the CRA test runner (press `a` to run all tests).
